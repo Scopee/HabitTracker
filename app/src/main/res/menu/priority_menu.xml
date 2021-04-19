@@ -1,0 +1,8 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/habit_high"
+        android:title="High" />
+    <item android:id="@+id/habit_medium"
+        android:title="Medium" />
+    <item android:id="@+id/habit_low"
+        android:title="Low" />
+</menu>
