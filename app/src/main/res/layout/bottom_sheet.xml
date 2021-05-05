@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/bottom_sheet"
+    android:orientation="vertical"
+    android:background="@color/white"
+    app:behavior_peekHeight="48dp"
+    app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:id="@+id/bottom_sheet_header"
+        android:background="@color/colorPrimary"
+        android:padding="8dp"
+        android:textSize="20dp"
+        android:text="Filters"
+        android:textColor="@android:color/white"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <RadioGroup
+        android:id="@+id/sort_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/margin_normal"
+        android:checkedButton="@+id/radio_button_1"
+        app:layout_constraintTop_toBottomOf="@id/bottom_sheet_header">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="Sort by" />
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/radio_sort_none"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="None" />
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/radio_sort_name"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="Name" />
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/radio_sort_date"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="Create date" />
+    </RadioGroup>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/filter_layout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/margin_normal"
+        android:hint="Filter by name"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/sort_group">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/filter_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="top"
+            android:inputType="none"
+            android:layout_margin="8dp"
+            android:maxLines="1"
+            tools:text="Name" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

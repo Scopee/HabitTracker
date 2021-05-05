@@ -7,14 +7,17 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import com.example.habittracker.MainActivity
 import com.example.habittracker.R
 import com.example.habittracker.databinding.FragmentHabitBinding
-import com.example.habittracker.models.Color
 import com.example.habittracker.models.Habit
 import com.example.habittracker.models.Priority
-import com.example.habittracker.models.Type
+import com.example.habittracker.viewmodel.HabitViewModel
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputLayout
 
@@ -27,37 +30,55 @@ class HabitFragment : Fragment() {
     private var viewBinding: FragmentHabitBinding? = null
     private val binding get() = viewBinding!!
 
+    private lateinit var viewModel: HabitViewModel
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        arguments?.apply {
+            habitId = getInt("id")
+        }
+        viewModel = ViewModelProvider(this, object : ViewModelProvider.Factory {
+            override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+                return HabitViewModel(activity as MainActivity, habitId) as T
+            }
+        }).get(HabitViewModel::class.java)
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        viewBinding = FragmentHabitBinding.inflate(inflater, container, false)
+        viewBinding = DataBindingUtil.inflate(
+            inflater,
+            R.layout.fragment_habit,
+            container,
+            false
+        )
+        binding.lifecycleOwner = this
+        binding.viewModel = viewModel
         return binding.root
     }
 
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        viewModel.habit.observe(viewLifecycleOwner, Observer {
+            habit = it
+            fillFields(it)
+            binding.executePendingBindings()
+        })
+
         (activity as MainActivity).getToolbar().setNavigationOnClickListener {
             checkChanges()
         }
         (activity as MainActivity).supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_back)
-        arguments?.apply {
-            val hid = getInt("id")
-            if (hid != -1) {
-                habitId = hid
-                habit = (activity as MainActivity).storage.find { it.id == hid }!!
-                fillFields((activity as MainActivity).storage.find { it.id == hid }!!)
-            } else {
-                habitId = (activity as MainActivity).storage.size
-            }
-        }
+
         initPriorityMenu()
         binding.habitAdd.setOnClickListener {
             saveHabit()
         }
     }
-
 
     private fun initPriorityMenu() {
         Log.i(TAG, "initPriorityMenu")
@@ -69,40 +90,17 @@ class HabitFragment : Fragment() {
     }
 
     private fun fillFields(habit: Habit) {
-        habitId = habit.id
-        binding.editName.setText(habit.name)
-        binding.editDescription.setText(habit.description)
-        when (habit.type) {
-            Type.GOOD -> binding.radioGood.isChecked = true
-            Type.BAD -> binding.radioBad.isChecked = true
-        }
-        binding.editPeriod.setText(habit.period)
-        when (habit.color) {
-            Color.RED -> binding.radioRed.isChecked = true
-            Color.BLUE -> binding.radioBlue.isChecked = true
-            Color.GREEN -> binding.radioGreen.isChecked = true
-        }
-        binding.habitAdd.text = "Update"
         lastPriority = habit.priority
         binding.priorityMenu.editText?.hint = lastPriority.toString()
+        binding.priorityMenu.hint = ""
     }
 
     private fun checkChanges() {
-        val newHabit = createHabitFromFields()
-        if (habit == null) {
-            if (newHabit.name.isNotEmpty() || newHabit.description.isNotEmpty()) {
-                askExit()
-            } else {
-                (activity as MainActivity).navController.popBackStack()
-            }
+        if (viewModel.isEmpty()) {
+            askExit()
         } else {
-            if (newHabit != habit) {
-                askExit()
-            } else {
-                (activity as MainActivity).navController.popBackStack()
-            }
+            (activity as MainActivity).navController.popBackStack()
         }
-
     }
 
     private fun askExit() {
@@ -114,44 +112,13 @@ class HabitFragment : Fragment() {
 
     private fun saveHabit() {
         Log.i(TAG, "saveHabit: save")
-        val habit = createHabitFromFields()
+        val habit = viewModel.habit.value!!
         Log.i(TAG, "saveHabit: ${habit.id}")
-        if (habit.id == (activity as MainActivity).storage.size) {
-            (activity as MainActivity).storage.add(habit)
-        } else {
-            (activity as MainActivity).storage[habitId] = habit
-        }
+        viewModel.saveHabit(habit)
+
         (activity as MainActivity).navController.popBackStack()
     }
 
-    private fun createHabitFromFields(): Habit {
-        val habitName = binding.editName.text.toString()
-        val habitDescription = binding.editDescription.text.toString()
-        val habitType = if (binding.radioGood.isChecked) Type.GOOD else Type.BAD
-        val habitPriorityView = binding.priorityMenu.editText?.text.toString()
-        val habitPriority = if (habitPriorityView.isEmpty()) {
-            lastPriority
-        } else {
-            Priority.valueOf(habitPriorityView)
-        }
-        val habitPeriod = binding.period.editText?.text.toString()
-        val habitColor = when {
-            binding.radioRed.isChecked -> Color.RED
-            binding.radioBlue.isChecked -> Color.BLUE
-            binding.radioGreen.isChecked -> Color.GREEN
-            else -> Color.WHITE
-        }
-
-        return Habit(
-            habitId,
-            habitName,
-            habitDescription,
-            habitPriority,
-            habitType,
-            habitPeriod,
-            habitColor
-        )
-    }
 
     override fun onStop() {
         super.onStop()
@@ -163,9 +130,14 @@ class HabitFragment : Fragment() {
         viewBinding = null
     }
 
+    override fun onResume() {
+        super.onResume()
+        Log.i(TAG, "onResume live: ${viewModel.habit.value}")
+    }
+
     companion object {
         private const val TAG = "HabitFragment"
-        fun newInstance(param1: String, param2: String) =
+        fun newInstance() =
             HabitFragment()
     }
 }

@@ -10,8 +10,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.habittracker.R
 import com.example.habittracker.models.Habit
 
-class HabitAdapter(private var habits: List<Habit>, private val callback: (Int) -> Unit) :
+class HabitAdapter(private val callback: (Int) -> Unit) :
     RecyclerView.Adapter<HabitAdapter.HabitsViewHolder>() {
+
+    private var habits: List<Habit> = listOf()
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -38,7 +40,7 @@ class HabitAdapter(private var habits: List<Habit>, private val callback: (Int) 
         notifyDataSetChanged()
     }
 
-    class HabitsViewHolder(private val view: View) : RecyclerView.ViewHolder(view) {
+    class HabitsViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         private val habitTitle: TextView = view.findViewById(R.id.habit_name)
         private val habitDescription: TextView = view.findViewById(R.id.habit_description)
         private val habitPriority: TextView = view.findViewById(R.id.habit_priority)
@@ -48,22 +50,12 @@ class HabitAdapter(private var habits: List<Habit>, private val callback: (Int) 
 
         fun bind(habit: Habit) {
             habitTitle.text = habit.name
-            if (habit.description.length > MAX_TEXT_LENGTH)
-                habitDescription.text =
-                    "${habit.description.subSequence(0,
-                        MAX_TEXT_LENGTH
-                    )}..."
-            else
-                habitDescription.text = habit.description
+            habitDescription.text = habit.description
             habitPriority.text = habit.priority.toString()
             habitType.text = habit.type.toString()
             habitPeriod.text = habit.period
             Log.i("Adapter", "bind: color=${habit.color.color}")
             habitColor.setBackgroundResource(habit.color.color)
-        }
-
-        companion object {
-            private const val MAX_TEXT_LENGTH = 64
         }
     }
 }

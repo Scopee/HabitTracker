@@ -1,47 +1,58 @@
 package com.example.habittracker.models
 
-import java.io.Serializable
+import androidx.room.*
+import java.time.LocalDateTime
 
-class Habit(
-    var id: Int,
-    var name: String,
-    var description: String,
-    var priority: Priority,
-    var type: Type,
-    var period: String,
-    var color: Color
-) : Serializable{
-    override fun toString(): String {
-        return "Habit(id=$id, name='$name', description='$description', priority=$priority, type=$type, period='$period')"
+@Entity(tableName = "habits")
+@TypeConverters(
+    Habit.PriorityConverter::class,
+    Habit.ColorConverter::class,
+    Habit.TypesConverter::class,
+    Habit.LocalDateTimeConverter::class
+)
+data class Habit(
+    @ColumnInfo(name = "name") var name: String,
+    @ColumnInfo(name = "description") var description: String,
+    @ColumnInfo(name = "priority") var priority: Priority,
+    @ColumnInfo(name = "type") var type: Type,
+    @ColumnInfo(name = "period") var period: String,
+    @ColumnInfo(name = "color") var color: Color,
+    @ColumnInfo(name = "updated") var date: LocalDateTime,
+    @PrimaryKey(autoGenerate = true) var id: Int = 0
+) {
+    class PriorityConverter {
+        @TypeConverter
+        fun toPriority(value: String) = enumValueOf<Priority>(value)
+
+        @TypeConverter
+        fun fromPriority(value: Priority) = value.name
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
+    class ColorConverter {
+        @TypeConverter
+        fun toColor(value: String) = enumValueOf<Color>(value)
 
-        other as Habit
-
-        if (id != other.id) return false
-        if (name != other.name) return false
-        if (description != other.description) return false
-        if (priority != other.priority) return false
-        if (type != other.type) return false
-        if (period != other.period) return false
-        if (color != other.color) return false
-
-        return true
+        @TypeConverter
+        fun fromColor(value: Color) = value.name
     }
 
-    override fun hashCode(): Int {
-        var result = id
-        result = 31 * result + name.hashCode()
-        result = 31 * result + description.hashCode()
-        result = 31 * result + priority.hashCode()
-        result = 31 * result + type.hashCode()
-        result = 31 * result + period.hashCode()
-        result = 31 * result + color.hashCode()
-        return result
+    class TypesConverter {
+        @TypeConverter
+        fun toColor(value: String) = enumValueOf<Type>(value)
+
+        @TypeConverter
+        fun fromColor(value: Type) = value.name
     }
 
+    class LocalDateTimeConverter {
+        @TypeConverter
+        fun toDate(value: String): LocalDateTime {
+            return LocalDateTime.parse(value)
+        }
 
+        @TypeConverter
+        fun fromDate(value: LocalDateTime): String {
+            return value.toString()
+        }
+    }
 }
