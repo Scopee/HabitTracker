@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.habittracker.R
 import com.example.habittracker.models.Habit
 
-class HabitAdapter(private val callback: (Int) -> Unit) :
+class HabitAdapter(private val callback: (String) -> Unit) :
     RecyclerView.Adapter<HabitAdapter.HabitsViewHolder>() {
 
     private var habits: List<Habit> = listOf()

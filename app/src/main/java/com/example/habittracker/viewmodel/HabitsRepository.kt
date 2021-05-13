@@ -7,19 +7,23 @@ import com.example.habittracker.models.Habit
 class HabitsRepository(private val habitDao: HabitDao) {
     val habits: LiveData<List<Habit>> = habitDao.getAllHabits()
 
-    fun delete(habit: Habit) {
+    suspend fun delete(habit: Habit) {
         habitDao.delete(habit)
     }
 
-    fun save(habit: Habit) {
-        if (habitDao.getHabitById(habit.id) != null) {
-            habitDao.saveHabit(habit)
-        } else {
-            habitDao.insertHabit(habit)
-        }
+    suspend fun save(habit: Habit) {
+        habitDao.insertHabit(habit)
     }
 
-    fun getHabitById(id: Int): Habit? {
+    fun getHabitById(id: String): LiveData<Habit> {
         return habitDao.getHabitById(id)
+    }
+
+    suspend fun getHabitByDatabaseId(id: String): Habit {
+        return habitDao.getHabitByDatabaseId(id)
+    }
+
+    suspend fun getAllHabitsFromDB(): List<Habit> {
+        return habitDao.getAllHabitsFromDB()
     }
 }

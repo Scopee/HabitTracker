@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import com.example.habittracker.database.dao.HabitDao
 import com.example.habittracker.models.Habit
 
-@Database(entities = [Habit::class], version = 1)
+@Database(entities = [Habit::class], version = 4)
 abstract class HabitsDatabase : RoomDatabase() {
     abstract fun habitDao(): HabitDao
 
@@ -25,7 +25,7 @@ abstract class HabitsDatabase : RoomDatabase() {
                     context.applicationContext,
                     HabitsDatabase::class.java,
                     "habits_database"
-                ).build()
+                ).fallbackToDestructiveMigration().build()
                 INSTANCE = instance
                 return instance
             }

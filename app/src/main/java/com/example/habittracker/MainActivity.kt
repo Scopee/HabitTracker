@@ -5,15 +5,19 @@ import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import android.view.inputmethod.InputMethodManager
+import android.widget.ImageView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
+import com.bumptech.glide.Glide
 import com.example.habittracker.databinding.ActivityMainBinding
 import com.example.habittracker.ui.fragments.MainFragment
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     private lateinit var viewBinding: ActivityMainBinding
@@ -66,12 +70,27 @@ class MainActivity : AppCompatActivity() {
         )
         drawer.addDrawerListener(toggle)
         toggle.syncState()
+        val imageView = navigation.getHeaderView(0).findViewById<ImageView>(R.id.drawer_image)
+        loadImage(this, imageView)
     }
+
+    private fun loadImage(activity: MainActivity, imageView: ImageView) =
+        this.lifecycleScope.launch {
+            Glide.with(activity)
+                .load(IMAGE_URL)
+                .circleCrop()
+                .error(R.mipmap.error_image)
+                .placeholder(R.mipmap.placeholder_image)
+                .override(240, 240)
+                .into(imageView)
+        }
 
     fun getToolbar(): Toolbar = toolbar
 
     companion object {
         private const val TAG = "MainActivity"
+        private const val IMAGE_URL =
+            "https://upload.wikimedia.org/wikipedia/ru/5/5f/Original_Doge_meme.jpg"
     }
 
     override fun onBackPressed() {
@@ -80,7 +99,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun hideKeyboard() {
-        val imm: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        val imm: InputMethodManager =
+            getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(window.decorView.windowToken, 0)
     }
+
 }

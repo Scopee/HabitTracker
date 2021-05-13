@@ -20,10 +20,11 @@ import com.example.habittracker.models.Priority
 import com.example.habittracker.viewmodel.HabitViewModel
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputLayout
+import java.time.LocalDateTime
 
 class HabitFragment : Fragment() {
 
-    private var habitId: Int = -1
+    private var habitId: String = ""
     private var lastPriority: Priority = Priority.NONE
     private var habit: Habit? = null
 
@@ -31,11 +32,15 @@ class HabitFragment : Fragment() {
     private val binding get() = viewBinding!!
 
     private lateinit var viewModel: HabitViewModel
+    private var new: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.apply {
-            habitId = getInt("id")
+            habitId = getString("id")!!
+            if (habitId == "-1")
+                new = true
+            Log.i(TAG, "onCreate: $habitId")
         }
         viewModel = ViewModelProvider(this, object : ViewModelProvider.Factory {
             override fun <T : ViewModel?> create(modelClass: Class<T>): T {
@@ -113,8 +118,13 @@ class HabitFragment : Fragment() {
     private fun saveHabit() {
         Log.i(TAG, "saveHabit: save")
         val habit = viewModel.habit.value!!
-        Log.i(TAG, "saveHabit: ${habit.id}")
-        viewModel.saveHabit(habit)
+        try {
+            habit.priority = Priority.valueOf(binding.priorityMenu.editText?.text.toString())
+        } catch (e:Exception) {
+
+        }
+        habit.date = LocalDateTime.now()
+        viewModel.saveHabit(habit, new)
 
         (activity as MainActivity).navController.popBackStack()
     }

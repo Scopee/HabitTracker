@@ -62,7 +62,9 @@ class MainFragment : Fragment() {
 
         floatingActionButton = view.findViewById(R.id.main_btn_create)
         floatingActionButton.setOnClickListener {
-            (activity as MainActivity).navController.navigate(R.id.action_mainFragment_to_habitFragment)
+            (activity as MainActivity).navController.navigate(R.id.action_mainFragment_to_habitFragment,
+            Bundle().apply
+             { putString("id", "-1") })
         }
 
         bottomSheetBehavior.addBottomSheetCallback(object :

@@ -18,7 +18,8 @@ data class Habit(
     @ColumnInfo(name = "period") var period: String,
     @ColumnInfo(name = "color") var color: Color,
     @ColumnInfo(name = "updated") var date: LocalDateTime,
-    @PrimaryKey(autoGenerate = true) var id: Int = 0
+    @PrimaryKey var id: String = "",
+    @ColumnInfo(name = "server_id") var serverId: String = ""
 ) {
     class PriorityConverter {
         @TypeConverter
@@ -56,3 +57,4 @@ data class Habit(
         }
     }
 }
+

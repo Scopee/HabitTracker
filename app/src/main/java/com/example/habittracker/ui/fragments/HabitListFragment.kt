@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.habittracker.MainActivity
 import com.example.habittracker.R
 import com.example.habittracker.databinding.FragmentHabitListBinding
@@ -59,6 +60,13 @@ class HabitListFragment : Fragment() {
             Log.i(TAG, "onViewCreated: observe")
             adapter.setList(list.filter { it.type == type })
         })
+
+        val refreshLayout = view.findViewById<SwipeRefreshLayout>(R.id.swipe_container)
+        refreshLayout.setOnRefreshListener {
+            viewModel.download {
+                refreshLayout.isRefreshing = false
+            }
+        }
     }
 
     private fun initRecyclerView(view: View) {
@@ -67,7 +75,9 @@ class HabitListFragment : Fragment() {
             HabitAdapter {
                 (activity as MainActivity).navController.navigate(
                     R.id.action_mainFragment_to_habitFragment,
-                    Bundle().apply { putInt("id", it) }
+                    Bundle().apply {
+                        putString("id", it)
+                    }
                 )
             }
         val manager = LinearLayoutManager(activity)
