@@ -65,7 +65,8 @@ class MainFragment : Fragment() {
             (activity as MainActivity).navController.navigate(R.id.action_mainFragment_to_habitFragment)
         }
 
-        bottomSheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+        bottomSheetBehavior.addBottomSheetCallback(object :
+            BottomSheetBehavior.BottomSheetCallback() {
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
                 floatingActionButton.animate().scaleX(1 - slideOffset).scaleY(1 - slideOffset)
                     .setDuration(0).start()
@@ -118,7 +119,7 @@ class MainFragment : Fragment() {
         })
     }
 
-    fun onBackPressed() :Boolean{
+    fun onBackPressed(): Boolean {
         if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED) {
             bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
             return false
@@ -129,6 +130,7 @@ class MainFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         (activity as MainActivity).initDrawer()
+        (activity as MainActivity).hideKeyboard()
     }
 
     companion object {
