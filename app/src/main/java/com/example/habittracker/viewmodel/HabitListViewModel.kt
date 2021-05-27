@@ -1,26 +1,12 @@
 package com.example.habittracker.viewmodel
 
 import android.app.Activity
-import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.*
 import com.example.habittracker.MainActivity
-import com.example.habittracker.database.HabitsDatabase
-import com.example.habittracker.models.Habit
-import com.example.habittracker.network.HabitApiService
-import com.example.habittracker.network.HabitsRemoteRepository
-import com.example.habittracker.network.ServerUid
-import kotlinx.coroutines.Dispatchers
+import com.example.habittracker.models.PresentationHabit
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.util.*
 
-class HabitListViewModel(val activity: Activity) : ViewModel() {
-    private val habitsRepository: HabitsRepository
-    private val remoteRepository: HabitsRemoteRepository
+class HabitListViewModel(private val activity: Activity) : ViewModel() {
 
     var sortByNone: Boolean = true
         set(value) {
@@ -53,21 +39,19 @@ class HabitListViewModel(val activity: Activity) : ViewModel() {
             updateList()
         }
 
-    private val mutableLiveData: MutableLiveData<List<Habit>> = MutableLiveData()
-    var sortedList: LiveData<List<Habit>> = mutableLiveData
+    private val mutableLiveData: MutableLiveData<List<PresentationHabit>> = MutableLiveData()
+    var sortedList: LiveData<List<PresentationHabit>> = mutableLiveData
 
-    private var list = listOf<Habit>()
+    private var list = listOf<PresentationHabit>()
 
     init {
-        val habitDao = HabitsDatabase.getDatabase(activity).habitDao()
-        val apiService = HabitApiService.serivce
-        habitsRepository = HabitsRepository(habitDao)
-        remoteRepository = HabitsRemoteRepository(apiService)
-        habitsRepository.habits.observe(activity as MainActivity, Observer {
-            list = it
-            mutableLiveData.value = it
-            updateList()
-        })
+        (activity as MainActivity).appComponent.getLoadAllHabitsUseCase().getAllHabits()
+            .asLiveData().observe(activity as MainActivity, Observer {
+                list = it.map { habit -> PresentationHabit.fromDomainHabit(habit) }
+                mutableLiveData.value = it.map { habit -> PresentationHabit.fromDomainHabit(habit) }
+                updateList()
+            })
+        download {  }
         upload()
 //        deleteAll()
     }
@@ -87,60 +71,11 @@ class HabitListViewModel(val activity: Activity) : ViewModel() {
     }
 
     fun upload() = (activity as MainActivity).lifecycleScope.launch {
-        val habits = habitsRepository.getAllHabitsFromDB().filter { it.serverId.isEmpty() }
-        for (habit in habits) {
-            try {
-                val response = remoteRepository.saveHabit(habit)
-                habit.id = response.uid
-                habitsRepository.save(habit)
-            } catch (e: Exception) {
-                Log.e(TAG, "upload: $e", e)
-            }
-        }
+        activity.appComponent.getUploadUseCase().upload()
     }
 
     fun download(callback: () -> Unit) = (activity as MainActivity).lifecycleScope.launch {
-        val habits = habitsRepository.getAllHabitsFromDB()
-        try {
-            val habitsFromServer = remoteRepository.getHabits()
-            for (habit in habitsFromServer) {
-                val habitFromDB = habits.find { it.serverId == habit.serverId }
-                Log.i(TAG, "download: from server $habit")
-                Log.i(TAG, "download: from DB $habitFromDB")
-                if (habitFromDB != null) {
-                    if (habit.date > habitFromDB.date) {
-                        habit.id = habitFromDB.id
-                        habitsRepository.save(habit)
-                    }
-                } else {
-                    habit.id = UUID.randomUUID().toString()
-                    habitsRepository.save(habit)
-
-                }
-            }
-            val listNotInServer =
-                habits.map { it.serverId }.minus(habitsFromServer.map { it.serverId })
-            val deleted = mutableListOf<Habit>()
-            for (deletedHabit in listNotInServer) {
-                deleted.add(habits.find { it.serverId == deletedHabit }!!)
-            }
-            for (deletedHabit in deleted) {
-                habitsRepository.delete(deletedHabit)
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "download: $e", e)
-        }
-
-        withContext(Dispatchers.Main) {
-            callback()
-        }
-    }
-
-    private fun deleteAll() = (activity as MainActivity).lifecycleScope.launch {
-        val habitsFromServer = remoteRepository.getHabits().map { it.serverId }
-        for (id in habitsFromServer) {
-            remoteRepository.deleteHabit(ServerUid(id))
-        }
+        activity.appComponent.getDownloadUseCase().download { callback() }
     }
 
     companion object {

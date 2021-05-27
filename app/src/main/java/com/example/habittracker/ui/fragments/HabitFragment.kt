@@ -15,7 +15,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.habittracker.MainActivity
 import com.example.habittracker.R
 import com.example.habittracker.databinding.FragmentHabitBinding
-import com.example.habittracker.models.Habit
+import com.example.habittracker.models.PresentationHabit
 import com.example.habittracker.models.Priority
 import com.example.habittracker.viewmodel.HabitViewModel
 import com.google.android.material.snackbar.Snackbar
@@ -26,7 +26,7 @@ class HabitFragment : Fragment() {
 
     private var habitId: String = ""
     private var lastPriority: Priority = Priority.NONE
-    private var habit: Habit? = null
+    private var habit: PresentationHabit? = null
 
     private var viewBinding: FragmentHabitBinding? = null
     private val binding get() = viewBinding!!
@@ -94,7 +94,7 @@ class HabitFragment : Fragment() {
         editText?.setAdapter(adapter)
     }
 
-    private fun fillFields(habit: Habit) {
+    private fun fillFields(habit: PresentationHabit) {
         lastPriority = habit.priority
         binding.priorityMenu.editText?.hint = lastPriority.toString()
         binding.priorityMenu.hint = ""

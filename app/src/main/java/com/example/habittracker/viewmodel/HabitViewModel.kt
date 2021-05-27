@@ -3,24 +3,19 @@ package com.example.habittracker.viewmodel
 import android.app.Activity
 import android.util.Log
 import androidx.lifecycle.*
-import androidx.lifecycle.Observer
 import com.example.habittracker.MainActivity
-import com.example.habittracker.database.HabitsDatabase
-import com.example.habittracker.models.*
-import com.example.habittracker.network.HabitApiService
-import com.example.habittracker.network.HabitsRemoteRepository
+import com.example.habittracker.models.Color
+import com.example.habittracker.models.PresentationHabit
+import com.example.habittracker.models.Priority
+import com.example.habittracker.models.Type
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
-import java.util.*
 
 class HabitViewModel(val activity: Activity, private val id: String) : ViewModel() {
-    private val habitsRepository: HabitsRepository
-    private val remoteRepository: HabitsRemoteRepository
+    private val mutableHabit: MutableLiveData<PresentationHabit> = MutableLiveData()
 
-    private val mutableHabit: MutableLiveData<Habit> = MutableLiveData()
-
-    val habit: LiveData<Habit> = mutableHabit
+    val habit: LiveData<PresentationHabit> = mutableHabit
 
     var good = false
         set(value) {
@@ -56,53 +51,29 @@ class HabitViewModel(val activity: Activity, private val id: String) : ViewModel
 
     init {
         Log.i(TAG, "id= $id")
-        val habitDao = HabitsDatabase.getDatabase(activity).habitDao()
-        val apiService = HabitApiService.serivce
-        habitsRepository = HabitsRepository(habitDao)
-        remoteRepository = HabitsRemoteRepository(apiService)
-        habitsRepository.getHabitById(id).observe(activity as MainActivity, Observer {
-            if (it == null) {
-                mutableHabit.value = Habit(
-                    "",
-                    "",
-                    Priority.NONE,
-                    Type.GOOD,
-                    "",
-                    Color.WHITE,
-                    LocalDateTime.now()
-                )
-            } else {
-                mutableHabit.value = it
-            }
-            Log.i(TAG, "observe: ${mutableHabit.value}")
-        })
-    }
-
-    fun saveHabit(habit: Habit, new: Boolean) = viewModelScope.launch(Dispatchers.Main) {
-        Log.i(TAG, "saveHabit: $new")
-        if (new)
-            habit.id = UUID.randomUUID().toString()
-        saveToDataBase(habit)
-        saveToServer(habit, new)
-    }
-
-    private fun saveToDataBase(habit: Habit) = viewModelScope.launch {
-        habitsRepository.save(habit)
-    }
-
-    private fun saveToServer(habit: Habit, new: Boolean) =
-        (activity as MainActivity).lifecycleScope.launch(Dispatchers.Main) {
-            try {
-                if (new) {
-                    val response = remoteRepository.saveHabit(habit)
-                    habit.serverId = response.uid
-                    habitsRepository.save(habit)
+        (activity as MainActivity).appComponent.getGetHabitUseCase().getHabit(id).asLiveData()
+            .observe(activity, Observer {
+                if (it == null) {
+                    mutableHabit.value = PresentationHabit(
+                        "",
+                        "",
+                        Priority.NONE,
+                        Type.GOOD,
+                        "",
+                        Color.WHITE,
+                        LocalDateTime.now()
+                    )
                 } else {
-                    remoteRepository.saveHabit(habit)
+                    mutableHabit.value = PresentationHabit.fromDomainHabit(it)
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, "saveHabit: $e")
-            }
+                Log.i(TAG, "observe: ${mutableHabit.value}")
+            })
+    }
+
+    fun saveHabit(habit: PresentationHabit, new: Boolean) =
+        viewModelScope.launch(Dispatchers.Main) {
+            (activity as MainActivity).appComponent.getSaveHabitUseCase()
+                .saveHabit(habit.toDomainHabit(), new, Dispatchers.Default)
         }
 
     fun isEmpty(): Boolean {

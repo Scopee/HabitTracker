@@ -8,12 +8,12 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.habittracker.R
-import com.example.habittracker.models.Habit
+import com.example.habittracker.models.PresentationHabit
 
 class HabitAdapter(private val callback: (String) -> Unit) :
     RecyclerView.Adapter<HabitAdapter.HabitsViewHolder>() {
 
-    private var habits: List<Habit> = listOf()
+    private var habits: List<PresentationHabit> = listOf()
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -35,7 +35,7 @@ class HabitAdapter(private val callback: (String) -> Unit) :
         }
     }
 
-    fun setList(habits: List<Habit>) {
+    fun setList(habits: List<PresentationHabit>) {
         this.habits = habits
         notifyDataSetChanged()
     }
@@ -48,7 +48,7 @@ class HabitAdapter(private val callback: (String) -> Unit) :
         private val habitPeriod: TextView = view.findViewById(R.id.habit_period)
         private val habitColor: ImageView = view.findViewById(R.id.habit_color)
 
-        fun bind(habit: Habit) {
+        fun bind(habit: PresentationHabit) {
             habitTitle.text = habit.name
             habitDescription.text = habit.description
             habitPriority.text = habit.priority.toString()

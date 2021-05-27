@@ -15,7 +15,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import com.bumptech.glide.Glide
+import com.example.data.di.ConnectionsModule
 import com.example.habittracker.databinding.ActivityMainBinding
+import com.example.habittracker.di.AppComponent
+import com.example.habittracker.di.DaggerAppComponent
 import com.example.habittracker.ui.fragments.MainFragment
 import kotlinx.coroutines.launch
 
@@ -25,12 +28,19 @@ class MainActivity : AppCompatActivity() {
     private lateinit var toolbar: Toolbar
     lateinit var mainFragment: MainFragment
 
+    lateinit var appComponent: AppComponent
+        private set
+
     private lateinit var drawer: DrawerLayout
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewBinding = ActivityMainBinding.inflate(layoutInflater)
+        appComponent =
+            DaggerAppComponent
+                .builder()
+                .connectionsModule(ConnectionsModule(this)).build()
         val view = viewBinding.root
         initToolbar()
         initDrawer()
