@@ -4,13 +4,17 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.habittracker.R
 import com.example.habittracker.models.PresentationHabit
 
-class HabitAdapter(private val callback: (String) -> Unit) :
+class HabitAdapter(
+    private val onItemClickCallback: (String) -> Unit,
+    private val onButtonClickCallback: (PresentationHabit) -> Unit
+) :
     RecyclerView.Adapter<HabitAdapter.HabitsViewHolder>() {
 
     private var habits: List<PresentationHabit> = listOf()
@@ -29,9 +33,9 @@ class HabitAdapter(private val callback: (String) -> Unit) :
     override fun getItemCount(): Int = habits.size
 
     override fun onBindViewHolder(holder: HabitsViewHolder, position: Int) {
-        holder.bind(habits[position])
+        holder.bind(habits[position], onButtonClickCallback)
         holder.itemView.setOnClickListener {
-            callback(habits[position].id)
+            onItemClickCallback(habits[position].id)
         }
     }
 
@@ -47,8 +51,9 @@ class HabitAdapter(private val callback: (String) -> Unit) :
         private val habitType: TextView = view.findViewById(R.id.habit_type)
         private val habitPeriod: TextView = view.findViewById(R.id.habit_period)
         private val habitColor: ImageView = view.findViewById(R.id.habit_color)
+        private val habitButton: Button = view.findViewById(R.id.habit_done)
 
-        fun bind(habit: PresentationHabit) {
+        fun bind(habit: PresentationHabit, callback: (PresentationHabit) -> Unit) {
             habitTitle.text = habit.name
             habitDescription.text = habit.description
             habitPriority.text = habit.priority.toString()
@@ -56,6 +61,9 @@ class HabitAdapter(private val callback: (String) -> Unit) :
             habitPeriod.text = habit.period
             Log.i("Adapter", "bind: color=${habit.color.color}")
             habitColor.setBackgroundResource(habit.color.color)
+            habitButton.setOnClickListener {
+                callback(habit)
+            }
         }
     }
 }

@@ -18,18 +18,25 @@ import com.example.habittracker.databinding.FragmentHabitListBinding
 import com.example.habittracker.models.Type
 import com.example.habittracker.ui.adapters.HabitAdapter
 import com.example.habittracker.viewmodel.HabitListViewModel
+import com.google.android.material.snackbar.Snackbar
+import javax.inject.Inject
 
 class HabitListFragment : Fragment() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: HabitAdapter
 
-    private lateinit var viewModel: HabitListViewModel
-
+    @Inject
+    lateinit var viewModel: HabitListViewModel
 
     private var viewBinding: FragmentHabitListBinding? = null
     private val binding get() = viewBinding!!
 
     private lateinit var type: Type
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        (activity as MainActivity).appComponent.getListHabitComponent().create().inject(this)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -48,14 +55,6 @@ class HabitListFragment : Fragment() {
             type = Type.values()[getInt(HABITS)]
         }
 
-        viewModel = ViewModelProvider(
-            (activity as MainActivity).mainFragment,
-            object : ViewModelProvider.Factory {
-                override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                    return HabitListViewModel(activity as MainActivity) as T
-                }
-            }).get(HabitListViewModel::class.java)
-
         viewModel.sortedList.observe(viewLifecycleOwner, Observer { list ->
             Log.i(TAG, "onViewCreated: observe")
             adapter.setList(list.filter { it.type == type })
@@ -72,14 +71,16 @@ class HabitListFragment : Fragment() {
     private fun initRecyclerView(view: View) {
         recyclerView = view.findViewById(R.id.recycler_view)
         adapter =
-            HabitAdapter {
+            HabitAdapter({
                 (activity as MainActivity).navController.navigate(
                     R.id.action_mainFragment_to_habitFragment,
                     Bundle().apply {
                         putString("id", it)
                     }
                 )
-            }
+            }, { viewModel.addDone(it) { it1 ->
+                Snackbar.make(requireView(), it1, Snackbar.LENGTH_SHORT ).show()
+            } })
         val manager = LinearLayoutManager(activity)
         recyclerView.layoutManager = manager
         recyclerView.adapter = adapter

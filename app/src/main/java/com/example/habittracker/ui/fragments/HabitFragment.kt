@@ -21,6 +21,7 @@ import com.example.habittracker.viewmodel.HabitViewModel
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputLayout
 import java.time.LocalDateTime
+import javax.inject.Inject
 
 class HabitFragment : Fragment() {
 
@@ -31,7 +32,8 @@ class HabitFragment : Fragment() {
     private var viewBinding: FragmentHabitBinding? = null
     private val binding get() = viewBinding!!
 
-    private lateinit var viewModel: HabitViewModel
+    @Inject
+    lateinit var viewModel: HabitViewModel
     private var new: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,11 +44,8 @@ class HabitFragment : Fragment() {
                 new = true
             Log.i(TAG, "onCreate: $habitId")
         }
-        viewModel = ViewModelProvider(this, object : ViewModelProvider.Factory {
-            override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                return HabitViewModel(activity as MainActivity, habitId) as T
-            }
-        }).get(HabitViewModel::class.java)
+        (activity as MainActivity).appComponent.getHabitComponent().create().inject(this)
+        viewModel.init(habitId)
     }
 
     override fun onCreateView(

@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import com.example.data.database.dao.HabitDao
 import com.example.domain.models.Habit
 
-@Database(entities = [Habit::class], version = 4, exportSchema = false)
+@Database(entities = [Habit::class], version = 7, exportSchema = false)
 abstract class HabitsDatabase : RoomDatabase() {
     abstract fun habitDao(): HabitDao
 

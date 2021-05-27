@@ -2,6 +2,7 @@ package com.example.data.network
 
 import com.example.data.utils.retry
 import com.example.domain.models.Habit
+import com.example.domain.models.HabitDone
 import com.example.domain.models.ServerUid
 import com.example.domain.repository.RemoteRepository
 import dagger.Component
@@ -22,5 +23,9 @@ class RemoteRepositoryImpl @Inject constructor(private val apiService: HabitApi)
 
     override suspend fun deleteHabit(id: ServerUid) = retry(times = 5) {
         apiService.deleteHabit(id)
+    }
+
+    override suspend fun habitDone(habit: HabitDone) {
+        apiService.habitDone(habit)
     }
 }

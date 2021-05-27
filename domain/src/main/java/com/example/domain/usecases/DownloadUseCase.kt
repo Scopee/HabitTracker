@@ -6,6 +6,7 @@ import com.example.domain.repository.DatabaseRepository
 import com.example.domain.repository.RemoteRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import retrofit2.HttpException
 import java.util.*
 import javax.inject.Inject
 
@@ -17,7 +18,12 @@ class DownloadUseCase @Inject constructor(
     suspend fun download(callback: () -> Unit) {
         val habits = databaseRepository.getAllHabitsFromDB()
         try {
-            val habitsFromServer = remoteRepository.getHabits()
+            var habitsFromServer = listOf<Habit>()
+            try {
+                habitsFromServer = remoteRepository.getHabits()
+            } catch (e: HttpException) {
+                Log.e(TAG, "download: ", e)
+            }
             for (habit in habitsFromServer) {
                 val habitFromDB = habits.find { it.serverId == habit.serverId }
                 Log.i(TAG, "download: from server $habit")

@@ -23,6 +23,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import javax.inject.Inject
 
 class MainFragment : Fragment() {
     private lateinit var viewPager: ViewPager2
@@ -31,7 +32,13 @@ class MainFragment : Fragment() {
 
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
 
-    private lateinit var listViewModel: HabitListViewModel
+    @Inject
+    lateinit var listViewModel: HabitListViewModel
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        (activity as MainActivity).appComponent.getListHabitComponent().create().inject(this)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -42,12 +49,6 @@ class MainFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        listViewModel = ViewModelProvider(this, object : ViewModelProvider.Factory {
-            override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                return HabitListViewModel(activity as MainActivity) as T
-            }
-        }).get(HabitListViewModel::class.java)
-
         val tabLayout = view.findViewById<TabLayout>(R.id.tab_layout)
         val botLayout = view.findViewById<ConstraintLayout>(R.id.bottom_sheet)
         bottomSheetBehavior = BottomSheetBehavior.from(botLayout)

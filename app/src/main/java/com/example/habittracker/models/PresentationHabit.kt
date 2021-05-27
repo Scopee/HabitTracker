@@ -13,7 +13,8 @@ data class PresentationHabit(
     var color: Color,
     var date: LocalDateTime,
     var id: String = "",
-    var serverId: String = ""
+    var serverId: String = "",
+    val doneDates: MutableList<LocalDateTime> = mutableListOf()
 ) {
 
     fun toDomainHabit(): Habit {
@@ -26,7 +27,8 @@ data class PresentationHabit(
             color.ordinal,
             date,
             id,
-            serverId
+            serverId,
+            doneDates
         )
     }
 
@@ -41,7 +43,8 @@ data class PresentationHabit(
                 Color.values()[habit.color],
                 habit.date,
                 habit.id,
-                habit.serverId
+                habit.serverId,
+                habit.doneDates
             )
         }
     }

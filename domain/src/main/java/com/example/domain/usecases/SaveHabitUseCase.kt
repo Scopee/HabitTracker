@@ -2,6 +2,7 @@ package com.example.domain.usecases
 
 import android.util.Log
 import com.example.domain.models.Habit
+import com.example.domain.models.ServerUid
 import com.example.domain.repository.DatabaseRepository
 import com.example.domain.repository.RemoteRepository
 import kotlinx.coroutines.CoroutineDispatcher

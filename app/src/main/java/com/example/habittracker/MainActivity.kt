@@ -18,6 +18,7 @@ import com.bumptech.glide.Glide
 import com.example.data.di.ConnectionsModule
 import com.example.habittracker.databinding.ActivityMainBinding
 import com.example.habittracker.di.AppComponent
+import com.example.habittracker.di.AppSubcomponents
 import com.example.habittracker.di.DaggerAppComponent
 import com.example.habittracker.ui.fragments.MainFragment
 import kotlinx.coroutines.launch
@@ -36,11 +37,11 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewBinding = ActivityMainBinding.inflate(layoutInflater)
         appComponent =
-            DaggerAppComponent
-                .builder()
+            DaggerAppComponent.builder()
+                .appSubcomponents(AppSubcomponents(this))
                 .connectionsModule(ConnectionsModule(this)).build()
+        viewBinding = ActivityMainBinding.inflate(layoutInflater)
         val view = viewBinding.root
         initToolbar()
         initDrawer()

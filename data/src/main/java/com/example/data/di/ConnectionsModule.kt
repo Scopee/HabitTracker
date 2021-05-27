@@ -7,9 +7,11 @@ import com.example.data.database.dao.HabitDao
 import com.example.data.network.HabitApi
 import com.example.data.network.RemoteRepositoryImpl
 import com.example.data.network.json.HabitDeserializer
+import com.example.data.network.json.HabitDoneSerializer
 import com.example.data.network.json.HabitSerializer
 import com.example.data.network.json.ServerUidDeserializer
 import com.example.domain.models.Habit
+import com.example.domain.models.HabitDone
 import com.example.domain.models.ServerUid
 import com.example.domain.repository.DatabaseRepository
 import com.example.domain.repository.RemoteRepository
@@ -89,6 +91,10 @@ class ConnectionsModule(private val context: Context) {
             .registerTypeAdapter(
                 ServerUid::class.java,
                 ServerUidSerializer()
+            )
+            .registerTypeAdapter(
+                HabitDone::class.java,
+                HabitDoneSerializer()
             )
             .create()
     }

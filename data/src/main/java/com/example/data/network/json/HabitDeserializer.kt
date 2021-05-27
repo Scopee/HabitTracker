@@ -14,7 +14,7 @@ class HabitDeserializer : JsonDeserializer<Habit> {
         json: JsonElement,
         typeOfT: Type?,
         context: JsonDeserializationContext?
-    ): Habit = Habit (
+    ): Habit = Habit(
         json.asJsonObject.get("title").asString,
         json.asJsonObject.get("description").asString,
         json.asJsonObject.get("priority").asInt,
@@ -22,6 +22,13 @@ class HabitDeserializer : JsonDeserializer<Habit> {
         json.asJsonObject.get("frequency").asString,
         json.asJsonObject.get("color").asInt,
         LocalDateTime.ofEpochSecond(json.asJsonObject.get("date").asLong, 0, ZoneOffset.UTC),
-        serverId = json.asJsonObject.get("uid").asString
+        serverId = json.asJsonObject.get("uid").asString,
+        doneDates = json.asJsonObject.get("done_dates").asJsonArray.map {
+            LocalDateTime.ofEpochSecond(
+                it.asLong,
+                0,
+                ZoneOffset.UTC
+            )
+        }.toMutableList()
     )
 }

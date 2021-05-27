@@ -11,8 +11,9 @@ import com.example.habittracker.models.Type
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
+import javax.inject.Inject
 
-class HabitViewModel(val activity: Activity, private val id: String) : ViewModel() {
+class HabitViewModel @Inject constructor(val activity: Activity) : ViewModel() {
     private val mutableHabit: MutableLiveData<PresentationHabit> = MutableLiveData()
 
     val habit: LiveData<PresentationHabit> = mutableHabit
@@ -49,7 +50,7 @@ class HabitViewModel(val activity: Activity, private val id: String) : ViewModel
         }
         get() = habit.value?.color == Color.BLUE
 
-    init {
+    fun init(id: String) {
         Log.i(TAG, "id= $id")
         (activity as MainActivity).appComponent.getGetHabitUseCase().getHabit(id).asLiveData()
             .observe(activity, Observer {
