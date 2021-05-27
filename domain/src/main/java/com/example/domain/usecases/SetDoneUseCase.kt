@@ -6,6 +6,8 @@ import com.example.domain.models.HabitDone
 import com.example.domain.models.Type
 import com.example.domain.repository.DatabaseRepository
 import com.example.domain.repository.RemoteRepository
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import java.time.DayOfWeek
 import java.time.LocalDateTime
@@ -16,18 +18,17 @@ class SetDoneUseCase @Inject constructor(
     private val remoteRepository: RemoteRepository
 ) {
 
-    suspend fun addDone(habit: Habit) : String{
+    suspend fun addDone(
+        habit: Habit,
+        dispatcher: CoroutineDispatcher,
+        callback: (String) -> Unit
+    ): String {
         val currentDate = LocalDateTime.now()
         habit.doneDates.add(currentDate)
         Log.i(TAG, "addDone: $habit")
-        habit.date = currentDate
-        databaseRepository.save(habit)
-        try {
-            remoteRepository.habitDone(HabitDone(currentDate, habit.serverId))
-        } catch (e: HttpException) {
-            Log.e(TAG, "addDone: ", e)
-        }
-        val startTime = currentDate.with(DayOfWeek.MONDAY).withHour(0).withMinute(0).withSecond(0).withNano(0)
+
+        val startTime =
+            currentDate.with(DayOfWeek.MONDAY).withHour(0).withMinute(0).withSecond(0).withNano(0)
         val finishTime = startTime.plusDays(7)
 
         val currentDates = habit.doneDates.filter { inRange(startTime, finishTime, it) }
@@ -35,24 +36,36 @@ class SetDoneUseCase @Inject constructor(
 
         when (habit.type) {
             Type.GOOD.ordinal -> {
-                return if (count < habit.period.toInt()) {
-                    GOOD_NOT_DONE.format(habit.period.toInt() - count)
-                } else {
-                    GOOD_DONE
-                }
+                callback(
+                    if (count < habit.period.toInt()) {
+                        GOOD_NOT_DONE.format(habit.period.toInt() - count)
+                    } else {
+                        GOOD_DONE
+                    }
+                )
             }
             Type.BAD.ordinal -> {
-                return if (count < habit.period.toInt()) {
-                    BAD_NOT_DONE.format(habit.period.toInt() - count)
-                } else {
-                    BAD_DONE
-                }
+                callback(
+                    if (count < habit.period.toInt()) {
+                        BAD_NOT_DONE.format(habit.period.toInt() - count)
+                    } else {
+                        BAD_DONE
+                    }
+                )
+            }
+        }
+        databaseRepository.save(habit)
+        withContext(dispatcher) {
+            try {
+                remoteRepository.habitDone(HabitDone(currentDate, habit.serverId))
+            } catch (e: HttpException) {
+                Log.e(TAG, "addDone: ", e)
             }
         }
         return ""
     }
 
-    private fun inRange(start: LocalDateTime, finish: LocalDateTime, date: LocalDateTime) :Boolean {
+    private fun inRange(start: LocalDateTime, finish: LocalDateTime, date: LocalDateTime): Boolean {
         return date.isAfter(start) && date.isBefore(finish)
     }
 

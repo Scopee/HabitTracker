@@ -27,6 +27,7 @@ abstract class HabitsDatabase : RoomDatabase() {
                     "habits_database"
                 ).fallbackToDestructiveMigration().build()
                 INSTANCE = instance
+
                 return instance
             }
         }

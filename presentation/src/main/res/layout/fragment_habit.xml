@@ -121,7 +121,7 @@
                 android:text="@={viewModel.habit.period}"
                 android:gravity="top"
                 android:lineSpacingExtra="1dp"
-                tools:text="Period" />
+                tools:text="Количество раз в неделю" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.button.MaterialButton
